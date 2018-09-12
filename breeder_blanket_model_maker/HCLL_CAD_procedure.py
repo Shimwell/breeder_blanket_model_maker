@@ -11,11 +11,11 @@ import os
 from collections import Counter
 import collections
 from collections import OrderedDict
-import rewrite_cad_files
 import Mesh
 import Draft
 import MeshPart
-from common_CAD_functions import *
+from breeder_blanket_model_maker.common_CAD_functions import *
+from breeder_blanket_model_maker.rewrite_cad_files import *
 import pprint
 
 def HCLL_detailed_module(blanket_parameters_dict):
@@ -134,14 +134,17 @@ def HCLL_detailed_module(blanket_parameters_dict):
           #dictionary_of_parts['first_wall_material']['part'] = [first_wall_front_layer, first_wall_back_layer]
 
           first_wall_poloidally_segmented = chop_up_poloidally(midpoint=first_wall_removed_envelope_midpoint,
-                                                                    poloidal_segmentations=blanket_parameters_dict['first_wall_channel_poloidal_segmentations'],
-                                                                    envelope=first_wall_middle_layer,
-                                                                    method='first_wall',
-                                                                    top_bottom_edges=front_face_torodial_edges_to_fillet,
-                                                                    front_face=envelope_front_face)
+                                                               poloidal_segmentations=blanket_parameters_dict['first_wall_channel_poloidal_segmentations'],
+                                                               envelope=first_wall_middle_layer,
+                                                               method='first_wall',
+                                                               top_bottom_edges=front_face_torodial_edges_to_fillet,
+                                                               front_face=envelope_front_face)
 
-          for i, key in enumerate(blanket_parameters_dict['first_wall_channel_poloidal_segmentations']):
-              dictionary_of_parts[key]['part'] = first_wall_poloidally_segmented[i]
+          #for i, key in enumerate(blanket_parameters_dict['first_wall_channel_poloidal_segmentations']):
+          #    dictionary_of_parts[key]['part'] = first_wall_poloidally_segmented[i]
+
+          dictionary_of_parts['first_wall_material']['part']=first_wall_poloidally_segmented[0]
+          dictionary_of_parts['first_wall_coolant']['part']=first_wall_poloidally_segmented[1]
 
           dictionary_of_parts['first_wall_material']['part'] = dictionary_of_parts['first_wall_material']['part']+[first_wall_front_layer, first_wall_back_layer]
 
@@ -188,6 +191,8 @@ def HCLL_detailed_module(blanket_parameters_dict):
                                    top_bottom_edges=front_face_torodial_edges_to_fillet,
                                    front_face=envelope_front_face)
 
+        dictionary_of_parts['slice_envelope']['part'] = slice
+
         dictionary_of_parts['slice_lithium_lead']['part'], dictionary_of_parts['lithium_lead']['part'] = common_and_uncommon_solids_with_envelope(dictionary_of_parts['lithium_lead']['part'], slice)
 
 
@@ -204,11 +209,11 @@ def HCLL_detailed_module(blanket_parameters_dict):
         #for i, key in enumerate(blanket_parameters_dict['poloidal_segmentations']):
         #  dictionary_of_parts['slice_'+key]['part'],dictionary_of_parts[key]['part'] = common_and_uncommon_solids_with_envelope(dictionary_of_parts[key]['part'],slice)
 
-        dictionary_of_parts['slice_cooling_plate_homogenised']['part'], dictionary_of_parts['cooling_plate_homogenised']['part'] = common_and_uncommon_solids_with_envelope(cooling_plate, slice)
+        slice_cooling_plate_homogenised, dictionary_of_parts['cooling_plate_homogenised']['part'] = common_and_uncommon_solids_with_envelope(cooling_plate, slice)
 
         #Part.makeCompound(cooling_plate_in_slice).exportStep('cooling_plate_in_slice.step')
 
-        list_of_cooling_pipes, list_of_structure = add_cooling_pipes_to_div(div_to_cool=dictionary_of_parts['slice_cooling_plate_homogenised']['part'][0],
+        list_of_cooling_pipes, list_of_structure = add_cooling_pipes_to_div(div_to_cool=slice_cooling_plate_homogenised[0],
                                                                             channel_poloidal_height = blanket_parameters_dict['cooling_plates_channel_poloidal_mm'],
                                                                             channel_radial_height = blanket_parameters_dict['cooling_plates_channel_radial_mm'],
                                                                             plate_poloidal_height = blanket_parameters_dict['poloidal_segmentations']['cooling_plate_homogenised'],
@@ -218,31 +223,38 @@ def HCLL_detailed_module(blanket_parameters_dict):
 
         dictionary_of_parts['slice_cooling_plate_coolant']['part'] = list_of_cooling_pipes
         dictionary_of_parts['slice_cooling_plate_material']['part'] = list_of_structure
-
-      prefix='_' + os.path.splitext(os.path.split(envelope_directory_filename)[-1])[0]
+ 
+      prefix = '_' + os.path.splitext(os.path.split(envelope_directory_filename)[-1])[0]
 
       
 
 
       if 'step' in output_files:
-          dictionary_of_parts=save_components_as_step(dictionary_of_parts = dictionary_of_parts, 
+          dictionary_of_parts = save_components_as_step(dictionary_of_parts = dictionary_of_parts, 
                                                       output_folder = output_folder_step, 
                                                       filename_prefix =prefix)
 
+ 
+
       if 'merged_stl' in output_files:
-          dictionary_of_parts=save_components_as_merged_stl_file(dictionary_of_parts=dictionary_of_parts,
-                                                                 output_folder=output_folder_merged_stl,
-                                                                 blanket_type=blanket_parameters_dict['blanket_type'])
+          dictionary_of_parts = save_components_as_merged_stl_file(dictionary_of_parts=dictionary_of_parts,
+                                                                   output_folder=output_folder_merged_stl,
+                                                                   blanket_type=blanket_parameters_dict['blanket_type'])
 
       if 'stl' in output_files:
-          dictionary_of_parts=save_components_as_stl(dictionary_of_parts = dictionary_of_parts, 
+          dictionary_of_parts = save_components_as_stl(dictionary_of_parts = dictionary_of_parts, 
                                                      output_folder = output_folder_stl)
 
       if 'h5m' in output_files:
-          dictionary_of_parts=save_components_as_h5m_file(dictionary_of_parts = dictionary_of_parts, 
-                                                          output_folder = output_folder_h5m, 
-                                                          blanket_type=blanket_parameters_dict['blanket_type'])
+          dictionary_of_parts = save_components_as_h5m_file(dictionary_of_parts = dictionary_of_parts, 
+                                                            output_folder = output_folder_h5m, 
+                                                            blanket_type=blanket_parameters_dict['blanket_type'])
 
 
+      if 'umesh' in output_files:
+          dictionary_of_parts = save_components_as_umesh(dictionary_of_parts = dictionary_of_parts,
+                                                         output_folder = output_folder,
+                                                         output_folder_step=output_folder_step,
+                                                         mesh_component_prefix='slice_')
 
       return dictionary_of_parts #.update({'logtime_data':logtime_data})
