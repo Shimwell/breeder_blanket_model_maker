@@ -65,7 +65,10 @@ def find_tally_and_error(filepath):
     return tally_results_dict
 
 
-def run_serpent_locally(path_and_file, omp_or_mpi='omp', num_cpu=str(multiprocessing.cpu_count())):
+def run_serpent_locally(path_and_file, 
+                        omp_or_mpi='omp', 
+                        num_cpu=str(multiprocessing.cpu_count()),
+                        plot=False):
 
     folder , file = os.path.split(path_and_file)
 
@@ -82,6 +85,10 @@ def run_serpent_locally(path_and_file, omp_or_mpi='omp', num_cpu=str(multiproces
         run_command ='sss2_v2.1.31 '+file+' -omp '+num_cpu
     if omp_or_mpi == 'mpi':
         run_command = 'mpirun -np ' +num_cpu+ ' --allow-run-as-root sss2_v2.1.31 '+file
+
+    if plot == False:
+        run_command = run_command + ' -noplot'
+
     print(run_command)
     os.system(run_command)
 
