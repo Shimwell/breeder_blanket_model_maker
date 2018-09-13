@@ -65,21 +65,26 @@ def find_tally_and_error(filepath):
     return tally_results_dict
 
 
-def run_serpent_locally(path_and_file):
+def run_serpent_locally(path_and_file, omp_or_mpi='omp', num_cpu=str(multiprocessing.cpu_count())):
 
-    print(path_and_file)
     folder , file = os.path.split(path_and_file)
-
 
     os.system('cd '+folder)
     cwd = os.getcwd()
     os.chdir(folder)
-    num_cpu = str(multiprocessing.cpu_count())
+
     os.system('rm serpent_input_file.serp_det0.m')
     os.system('rm serpent_input_file.serp_res.m')
     os.system('rm serpent_input_file.serp.seed')
     os.system('rm serpent_input_file.serp.out')
-    os.system('sss2 '+file+' -omp '+num_cpu)
+
+    if omp_or_mpi == 'omp':
+        run_command ='sss2_v2.1.31 '+file+' -omp '+num_cpu
+    if omp_or_mpi == 'mpi':
+        run_command = 'mpirun -np ' +num_cpu+ ' --allow-run-as-root sss2_v2.1.31 '+file
+    print(run_command)
+    os.system(run_command)
+
 
     os.system('cd ../..')
     os.chdir(cwd)

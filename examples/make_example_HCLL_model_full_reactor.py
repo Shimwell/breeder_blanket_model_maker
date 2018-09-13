@@ -191,6 +191,6 @@ neutronics_parameters = define_neutronics_model_parmeters(list_detailed_modules_
 
 directory_path_to_serpent_output,number_of_stl_parts= make_serpent_stl_based_input_file(neutronics_parameters)
 
-tally_dict = run_serpent_locally(directory_path_to_serpent_output)
+tally_dict = run_serpent_locally(directory_path_to_serpent_output,omp_or_mpi='omp')
 
-
+print(tally_dict)

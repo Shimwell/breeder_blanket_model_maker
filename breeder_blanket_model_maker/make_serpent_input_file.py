@@ -157,7 +157,7 @@ def return_serpent_file_material_cards(components,material_dictionary):
         if material_dictionary[component].material_card_name not in materials_already_added:
             lines_for_file.append('\n\n')
 
-            lines_for_file.append(material_dictionary[component].serpent_material_card())
+            lines_for_file.append(material_dictionary[component].material_card(code='serpent'))
             materials_already_added.append(material_dictionary[component].material_card_name)
         else:
             print('material previous added')

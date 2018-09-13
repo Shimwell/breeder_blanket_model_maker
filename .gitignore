@@ -28,3 +28,6 @@ upload.sh
 *.log
 
 .idea/
+
+/Eurofusion_baseline_2016/
+/McCadtrunk5/
