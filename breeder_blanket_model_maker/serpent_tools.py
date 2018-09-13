@@ -96,7 +96,7 @@ def run_serpent_locally(path_and_file,
     os.system('cd ../..')
     os.chdir(cwd)
 
-    tally_dict = find_tally_and_error(filename_and_path+'_det0.m')
+    tally_dict = find_tally_and_error(path_and_file+'_det0.m')
 
     return tally_dict
 
