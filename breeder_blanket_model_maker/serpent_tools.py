@@ -14,7 +14,7 @@ def find_tally_and_error(filepath):
         print("Has the _det0 file been output to the correct place?")
 
         sys.exit()
-    
+
     tally_results_dict = {}
     for counter in range(0,len(content)):
         if content[counter].startswith('DET'):
@@ -25,14 +25,14 @@ def find_tally_and_error(filepath):
             while content[counter].startswith('];')==False:
                 tally_values.append(float(content[counter].split()[-2]))
                 tally_error_values.append(float(content[counter].split()[-1]))
-                counter= counter+1  
+                counter= counter+1
             tally_total=0
             tally_error_total=0
             for i in range(len(tally_values)):
                 tally_total += tally_values[i]
                 tally_error_total += tally_error_values[i] ** 2
             tally_error_total = math.sqrt(tally_error_total)
-            
+
             tally_results_dict[tally_name]={'tally_total':tally_total,'tally_error_total':tally_error_total}
 
 
@@ -46,7 +46,7 @@ def find_tally_and_error(filepath):
                 while content[counter].startswith('];')==False:
                     tally_values.append(float(content[counter].split()[-2]))
                     tally_error_values.append(float(content[counter].split()[-1]))
-                    counter= counter+1  
+                    counter= counter+1
 
         tally_total=0
         tally_error_total=0
@@ -60,7 +60,7 @@ def find_tally_and_error(filepath):
         energy_amplification = total_heating_MeV/14.1
 
         tally_results_dict['energy_amplification']={'tally_total':energy_amplification,'tally_error_total':tally_error_total}
-    
+
     pprint.pprint(tally_results_dict)
     return tally_results_dict
 
@@ -89,12 +89,15 @@ def run_serpent_locally(path_and_file, omp_or_mpi='omp', num_cpu=str(multiproces
     os.system('cd ../..')
     os.chdir(cwd)
 
-    tally_dict = find_tally_and_error(path_and_file+'_det0.m')
+    tally_dict = find_tally_and_error(filename_and_path+'_det0.m')
 
     return tally_dict
 
 # tally_dict = find_tally_and_error('/home/jshim/detailed_HCPB/serpent_input_file.serp_det0.m')
+# print(tally_dict['tbr'])
 # tally_dict = find_tally_and_error('/home/jshim/detailed_HCLL/serpent_input_file.serp_det0.m')
+# print(tally_dict['tbr'])
 # tally_dict = find_tally_and_error('/home/jshim/detailed_DCLL/serpent_input_file.serp_det0.m')
+# print(tally_dict['tbr'])
 # tally_dict = find_tally_and_error('/home/jshim/detailed_WCLL/serpent_input_file.serp_det0.m')
-
+# print(tally_dict['tbr'])

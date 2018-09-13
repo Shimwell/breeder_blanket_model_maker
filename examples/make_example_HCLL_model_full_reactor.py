@@ -27,12 +27,12 @@ def define_blanket_geometry_parmeters(blanket_type,input_files,output_directory,
 
     pressure_coolant = 10. * 1000000.  # in units Pa
 
-    first_walls_thickness = (first_wall_channel_radial_mm/1000) + math.sqrt((pressure_coolant * (poloidal_lithium_lead_in_mm/1000) * (poloidal_lithium_lead_in_mm/1000) ) / (4. * smd))  # units in m
-    first_walls_thickness_mm = first_walls_thickness *1000
+    first_walls_thickness = (first_wall_channel_radial_mm/1000.) + math.sqrt((pressure_coolant * (poloidal_lithium_lead_in_mm/1000.) * (poloidal_lithium_lead_in_mm/1000.) ) / (4. * smd))  # units in m
+    first_walls_thickness_mm = first_walls_thickness *1000.
 
     poloidal_cooling_plate_mm = (pressure_coolant * (poloidal_lithium_lead_in_mm)) / (1.1 * smd)
 
-    poloidal_cooling_plate_mm = max(poloidal_cooling_plate_mm, 0.002*1000) + cooling_plates_channel_poloidal_mm
+    poloidal_cooling_plate_mm = max(poloidal_cooling_plate_mm, 0.002*1000.) + cooling_plates_channel_poloidal_mm
 
     cooling_channel_offset_from_first_wall = (first_walls_thickness_mm - first_wall_channel_radial_mm) / 2.0
 
@@ -89,6 +89,7 @@ def define_blanket_geometry_parmeters(blanket_type,input_files,output_directory,
 def define_neutronics_materials(enrichment_fraction):
 
     mat_lithium_lead =Compound('Pb84.2Li15.8',
+                              color=(0, 110, 50), #(0.0, 0.43359375, 0.26953125),
                               density_atoms_per_barn_per_cm=3.2720171E-2,
                               enriched_isotopes=[Isotope('Li',6,abundance=enrichment_fraction),
                                                  Isotope('Li',7,abundance=1.0-enrichment_fraction)])
@@ -105,8 +106,8 @@ def define_neutronics_materials(enrichment_fraction):
                              'first_wall_homogenised': mat_first_wall_homogenised,
                              'plasma': mat_DT_plasma,
                              'central_solenoid': mat_central_solenoid_m25,
-                             'divertor_1st_layer': mat_divertor_layer_1_m15, 
-                             'divertor_2nd_layer': mat_divertor_layer_2_m74, 
+                             'divertor_1st_layer': mat_divertor_layer_1_m15,
+                             'divertor_2nd_layer': mat_divertor_layer_2_m74,
                              'divertor_3rd_layer': mat_divertor_layer_3_m15,
                              'divertor_4th_layer': mat_divertor_layer_4_m75,
                              'manifolder': mat_VV_Body_m60 ,
@@ -159,18 +160,18 @@ def define_neutronics_model_parmeters(list_detailed_modules_parts,material_dicti
                                         {'name':'photon_heating',
                                             'bodies':['armour','lithium_lead','back_plate_1','back_plate_2','back_plate_3','back_lithium_lead','back_helium','cooling_plate_homogenised','end_caps_homogenised','first_wall_homogenised',],
                                             'mt_number':-26,
-                                            'particle_type':'p'},                                            
+                                            'particle_type':'p'},
                                        ]
                              }
 
     return neutronics_parameters
 
 
-output_directory='/home/jshim/detailed_HCLL'
+output_directory='/home/jshim/detailed_HCLL_no_um'
 list_of_geometry_parameters = define_blanket_geometry_parmeters(blanket_type ='HCLL',
                                                                 input_files= ['/home/jshim/Eurofusion_baseline_2016/envelopes/mod' + str(x) + '.step' for x in range(1, 27)],#27,
                                                                 output_directory = output_directory,
-                                                                poloidal_lithium_lead_in_mm =34.5)
+                                                                poloidal_lithium_lead_in_mm =80.0)
 
 list_of_detailed_modules_parts = detailed_module(list_of_geometry_parameters)
 
@@ -187,10 +188,12 @@ material_dictionary=define_neutronics_materials(enrichment_fraction=0.8)
 neutronics_parameters = define_neutronics_model_parmeters(list_detailed_modules_parts=list_of_detailed_modules_parts,
                                                           material_dictionary=material_dictionary,
                                                           output_directory=output_directory,
-                                                          nps=1000)
+                                                          nps=10000)
 
 directory_path_to_serpent_output,number_of_stl_parts= make_serpent_stl_based_input_file(neutronics_parameters)
 
-tally_dict = run_serpent_locally(directory_path_to_serpent_output,omp_or_mpi='omp')
+tally_dict = run_serpent_locally(filename_and_path = directory_path_to_serpent_output,
+                                 omp_or_mpi='omp',
+                                 plot = neutronics_parameters['plot_serpent_geometry'])
 
 print(tally_dict)
